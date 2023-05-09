@@ -1,21 +1,12 @@
 "use strict";
 console.log("hello");
-const HEIGHT = 10;
-const WIDTH = 10;
-// let current_board: GameBoard = [...Array(HEIGHT)].map(() => Array(HEIGHT).fill(0))
-let current_board = [
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
-let next_board = structuredClone(current_board);
+const tiles_W_H = 50;
+const board_size = 500;
+const HEIGHT = tiles_W_H;
+const WIDTH = tiles_W_H;
+const create_game_board = () => [...Array(HEIGHT)].map(() => Array(HEIGHT).fill(0));
+let current_board = create_game_board();
+let next_board = create_game_board();
 const next_button = document.getElementById("next");
 if (next_button == null) {
     throw Error("no button is found");
@@ -28,6 +19,8 @@ const ctx = cell_canvas.getContext("2d");
 if (ctx == null) {
     throw Error("no 2d context is found");
 }
+ctx.canvas.height = board_size;
+ctx.canvas.width = board_size;
 const cell_size = ctx.canvas.height / HEIGHT;
 const add_point_on_screen = (x, y, current_board) => {
     const cellX = Math.floor(x / cell_size);
@@ -35,7 +28,7 @@ const add_point_on_screen = (x, y, current_board) => {
     current_board[cellY][cellX] = 1;
 };
 const render_board = (game_board, ctx) => {
-    ctx.clearRect(0, 0, 500, 500);
+    ctx.clearRect(0, 0, board_size, board_size);
     ctx.beginPath();
     for (let c = 0; c < game_board.length; c++) {
         for (let r = 0; r < game_board[c].length; r++) {
@@ -63,25 +56,24 @@ const get_n_neighbors = (game_board, x, y) => {
     }
     return neighbors;
 };
-const calc_next_board = (game_board, next_board) => {
+const calc_next_board = (game_board, next) => {
     for (let c = 0; c < game_board.length; c++) {
         for (let r = 0; r < game_board[c].length; r++) {
             const n_neighbors = get_n_neighbors(game_board, c, r);
             if (game_board[c][r]) {
-                console.log(n_neighbors);
                 if (n_neighbors < 2) {
-                    next_board[c][r] = 0;
+                    next[c][r] = 0;
                 }
                 if (n_neighbors == 2 || n_neighbors == 3) {
-                    next_board[c][r] = 1;
+                    next[c][r] = 1;
                 }
                 if (n_neighbors > 3) {
-                    next_board[c][r] = 0;
+                    next[c][r] = 0;
                 }
             }
             else {
                 if (n_neighbors == 3) {
-                    next_board[c][r] = 1;
+                    next[c][r] = 1;
                 }
             }
         }
@@ -89,17 +81,13 @@ const calc_next_board = (game_board, next_board) => {
 };
 next_button.addEventListener("click", (e) => {
     calc_next_board(current_board, next_board);
-    console.log(next_board);
-    const temp = structuredClone(current_board);
     current_board = structuredClone(next_board);
-    next_board = structuredClone(temp);
     render_board(next_board, ctx);
 });
 cell_canvas.addEventListener("click", (e) => {
     const x = e.offsetX;
     const y = e.offsetY;
     add_point_on_screen(x, y, current_board);
-    // console.log(current_board)
     render_board(current_board, ctx);
 });
 render_board(current_board, ctx);
